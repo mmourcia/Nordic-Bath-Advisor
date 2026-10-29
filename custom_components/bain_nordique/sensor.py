@@ -168,7 +168,8 @@ SENSORS: tuple[BainSensorDescription, ...] = (
     ),
     BainSensorDescription(
         key="delai_allumage", icon="mdi:timer-play-outline",
-        device_class=SensorDeviceClass.DURATION, native_unit_of_measurement=UnitOfTime.MINUTES,
+        device_class=SensorDeviceClass.DURATION, state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
         suggested_display_precision=0, entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda c: round(c.params.lag_h * 60),
         attr_fn=lambda c: {"delais_appris": c.params.n_lag},

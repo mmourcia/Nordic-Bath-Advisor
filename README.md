@@ -11,7 +11,7 @@ avec ou sans maintien électrique. Elle répond à :
 
 Tout est appris à partir des courbes, sans réglage : il suffit de choisir les entités.
 
-![Carte Bain nordique pendant un feu, thèmes clair et sombre](docs/carte.png)
+![Carte Bain nordique pendant un feu, thèmes clair et sombre](https://raw.githubusercontent.com/mmourcia/Nordic-Bath-Advisor/main/docs/carte.png)
 
 *La carte livrée avec l'intégration, pendant un feu : température, cible, heure d'arrivée à 38 °C avec sa fourchette, pic prévu, courbe mesurée et prévue, statistiques.*
 
@@ -103,7 +103,7 @@ Exemples de notifications : [`examples/automations.yaml`](examples/automations.y
 
 ## Carte Lovelace
 
-L'intégration embarque sa propre carte, chargée automatiquement (aucune ressource à déclarer).
+L'intégration embarque sa propre carte. Elle la déclare elle-même comme ressource Lovelace et met à jour son numéro de version : il n'y a rien à configurer, y compris dans l'application mobile.
 Une seule ligne suffit, les entités sont trouvées seules :
 
 ```yaml
