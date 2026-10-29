@@ -1,0 +1,36 @@
+name: Release
+
+# Crée une release GitHub (lue par HACS) quand la version du manifeste change sur main.
+on:
+  push:
+    branches: [main]
+    paths: [custom_components/bain_nordique/manifest.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lire la version
+        id: v
+        run: echo "version=$(jq -r .version custom_components/bain_nordique/manifest.json)" >> "$GITHUB_OUTPUT"
+      - name: Notes depuis le CHANGELOG
+        run: |
+          awk -v v="${{ steps.v.outputs.version }}" '
+            /^## / { on = index($0, "## " v " ") == 1 || $0 == "## " v; next }
+            on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Version ${{ steps.v.outputs.version }}" > notes.md
+      - name: Créer la release si elle n'existe pas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v${{ steps.v.outputs.version }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "$tag existe déjà"
+          else
+            gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md --latest
+          fi
