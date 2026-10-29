@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 — 2026-10-29
+- Correctif : la relecture de l'historique plantait avec les états du recorder (`LazyState` sans
+  attribut `domain`), et l'intégration restait bloquée en « Lecture de l'historique… » sans rien
+  apprendre. Un échec de relecture ne bloque plus le fonctionnement en direct.
+- Test avec le vrai recorder.
+
 ## 1.2.0 — 2026-10-29
 - La carte affiche le vent (km/h) à côté de la température extérieure quand une source de vent est configurée.
 - Capture de la carte dans le README.
