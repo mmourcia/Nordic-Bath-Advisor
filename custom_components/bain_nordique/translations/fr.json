@@ -1,0 +1,130 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bain nordique",
+        "description": "Choisis la sonde de l'eau et une température extérieure (capteur ou entité météo). Le vent est optionnel : une entité météo ou un capteur de vent permet d'apprendre son effet sur les pertes.",
+        "data": {
+          "water_sensor": "Température de l'eau",
+          "outdoor_sensor": "Température extérieure (capteur ou météo)",
+          "wind_sensor": "Vent (météo ou capteur, optionnel)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Cette sonde d'eau est déjà configurée"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Sources extérieures",
+        "data": {
+          "outdoor_sensor": "Température extérieure (capteur ou météo)",
+          "wind_sensor": "Vent (météo ou capteur, optionnel)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "etat": {
+        "name": "État",
+        "state": {
+          "hold": "Maintien électrique",
+          "cooling": "Refroidissement",
+          "lit": "Feu allumé, en attente de montée",
+          "fire": "Feu en cours",
+          "probe_out": "Sonde hors de l'eau"
+        }
+      },
+      "conseil": {
+        "name": "Conseil"
+      },
+      "heure_cible": {
+        "name": "Heure d'atteinte de la cible"
+      },
+      "duree_avant_cible": {
+        "name": "Durée avant la cible"
+      },
+      "pic_prevu": {
+        "name": "Pic prévu"
+      },
+      "heure_pic": {
+        "name": "Heure du pic"
+      },
+      "intensite_feu": {
+        "name": "Intensité du feu"
+      },
+      "sous_la_cible": {
+        "name": "Sous la cible à"
+      },
+      "nombre_feux": {
+        "name": "Nombre de feux"
+      },
+      "feux_30_jours": {
+        "name": "Feux sur 30 jours"
+      },
+      "temps_moyen_38": {
+        "name": "Temps moyen jusqu'à 38 °C"
+      },
+      "temps_moyen_39": {
+        "name": "Temps moyen jusqu'à 39 °C"
+      },
+      "temps_moyen_cible": {
+        "name": "Temps moyen jusqu'à la cible"
+      },
+      "montee_moyenne": {
+        "name": "Vitesse de montée moyenne"
+      },
+      "dernier_feu": {
+        "name": "Pic du dernier feu"
+      },
+      "pertes_actuelles": {
+        "name": "Pertes actuelles"
+      },
+      "coef_pertes": {
+        "name": "Coefficient de pertes"
+      },
+      "consigne_maintien": {
+        "name": "Consigne du maintien électrique"
+      },
+      "delai_allumage": {
+        "name": "Délai d'allumage"
+      },
+      "courbe_feu": {
+        "name": "Chaleur du feu habituel"
+      },
+      "sensibilite_vent": {
+        "name": "Sensibilité au vent"
+      }
+    },
+    "binary_sensor": {
+      "feu_en_cours": {
+        "name": "Feu en cours"
+      },
+      "bain_pret": {
+        "name": "Bain prêt"
+      },
+      "sonde_hors_eau": {
+        "name": "Sonde hors de l'eau"
+      }
+    },
+    "button": {
+      "feu_allume": {
+        "name": "Feu allumé"
+      },
+      "pas_de_feu": {
+        "name": "Pas de feu"
+      },
+      "reapprendre": {
+        "name": "Réapprendre depuis l'historique"
+      }
+    },
+    "number": {
+      "cible": {
+        "name": "Température visée"
+      }
+    }
+  }
+}
