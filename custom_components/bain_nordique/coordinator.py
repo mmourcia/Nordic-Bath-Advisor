@@ -322,6 +322,7 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         return {"integration": DOMAIN, "entites": ents, "sonde_eau": self.water,
                 "exterieur": self.outdoor, "temperature_eau": self.data.get("tw") if self.data else None,
                 "temperature_exterieure": self.data.get("te") if self.data else None,
+                "vent_kmh": round(self.data["wind"], 1) if self.data and self.data.get("wind") is not None else None,
                 "maintien_bas": p.hold_low, "maintien_haut": p.hold_high}
 
     # ------------------------------------------------------------ calcul

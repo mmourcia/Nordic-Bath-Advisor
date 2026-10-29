@@ -9,7 +9,7 @@
  *
  * Les entités sont trouvées seules via l'attribut `entites` du capteur d'état.
  */
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 const STATE_LABEL = {
   hold: "Maintien électrique",
@@ -227,6 +227,7 @@ class BainNordiqueCard extends HTMLElement {
         <div class="stat-v">${v === null ? "—" : fmt(v)}</div><div class="stat-l">${label}</div></div>`;
     };
     const te = a.temperature_exterieure;
+    const wind = a.vent_kmh;
 
     this.shadowRoot.innerHTML = `${this._style()}
       <ha-card>
@@ -247,7 +248,9 @@ class BainNordiqueCard extends HTMLElement {
               <div class="target-v">${num(target, 1)} °C</div>
               <button class="round" data-action="target" data-step="0.5">+</button>
             </div>
-            <div class="ext">Extérieur ${num(te, 1)} °C · pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</div>
+            <div class="ext"><ha-icon icon="mdi:thermometer"></ha-icon>${num(te, 1)} °C${wind !== null && wind !== undefined
+              ? ` · <ha-icon icon="mdi:weather-windy"></ha-icon>${num(wind, 0)} km/h` : ""}</div>
+            <div class="ext">pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</div>
           </div>
         </div>
         ${prediction}
@@ -333,6 +336,7 @@ class BainNordiqueCard extends HTMLElement {
       .temp.ok { color: var(--success-color, #43a047); }
       .target { text-align: right; }
       .target-l, .ext { font-size: .8em; color: var(--secondary-text-color); }
+      .ext ha-icon { --mdc-icon-size: 14px; vertical-align: -2px; margin-right: 1px; }
       .target-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin: 2px 0; }
       .target-v { font-size: 1.3em; min-width: 72px; text-align: center; color: var(--primary-text-color); }
       button { font: inherit; cursor: pointer; border: none; }

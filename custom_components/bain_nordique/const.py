@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 DOMAIN = "bain_nordique"
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 CARD_URL = f"/{DOMAIN}/bain-nordique-card.js"
 CONF_WATER = "water_sensor"
 CONF_OUTDOOR = "outdoor_sensor"      # capteur de température ou entité météo
