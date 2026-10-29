@@ -46,7 +46,7 @@ def read_temperature(state: State | None) -> float | None:
     if state is None or state.state in ("unknown", "unavailable"):
         return None
     try:
-        if state.domain == "weather":
+        if state.entity_id.startswith("weather."):   # State ou LazyState du recorder
             value = float(state.attributes["temperature"])
             unit = state.attributes.get("temperature_unit", UnitOfTemperature.CELSIUS)
         else:
@@ -67,7 +67,7 @@ def read_wind(state: State | None) -> float | None:
     if state is None or state.state in ("unknown", "unavailable"):
         return None
     try:
-        if state.domain == "weather":
+        if state.entity_id.startswith("weather."):   # State ou LazyState du recorder
             value = float(state.attributes["wind_speed"])
             unit = state.attributes.get("wind_speed_unit", UnitOfSpeed.KILOMETERS_PER_HOUR)
         else:
@@ -159,6 +159,21 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
 
     async def _async_replay(self, resume: datetime | None, declared: datetime | None,
                             full: bool = False) -> None:
+        """Relit l'historique ; en cas d'échec, l'intégration repart en direct."""
+        try:
+            await self._async_replay_inner(resume, declared, full)
+        except Exception:  # noqa: BLE001 - ne jamais rester bloqué en « lecture »
+            _LOGGER.exception("Relecture de l'historique impossible, apprentissage en direct seulement")
+            queued, self._queue = self._queue, []
+            self.replaying = False
+            self._bootstrapped = True
+            self.engine.set_outdoor(self._outdoor_now())
+            self.engine.set_wind(self._wind_now())
+            self._feed_all(self.engine, queued)
+            self.async_set_updated_data(self.compute())
+
+    async def _async_replay_inner(self, resume: datetime | None, declared: datetime | None,
+                                  full: bool) -> None:
         """Relit l'historique du recorder.
 
         Première installation (ou « Réapprendre ») : 60 jours, avec apprentissage.

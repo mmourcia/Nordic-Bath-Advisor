@@ -9,7 +9,7 @@
  *
  * Les entités sont trouvées seules via l'attribut `entites` du capteur d'état.
  */
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 
 const STATE_LABEL = {
   hold: "Maintien électrique",
