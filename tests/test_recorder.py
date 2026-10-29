@@ -33,7 +33,7 @@ async def test_replay_from_recorder(hass: HomeAssistant) -> None:
                             data={CONF_WATER: WATER, CONF_OUTDOOR: WEATHER, CONF_WIND: WEATHER})
     entry.add_to_hass(hass)
     assert await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)   # la relecture tourne en fond
 
     coord = entry.runtime_data
     assert not coord.replaying
