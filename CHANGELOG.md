@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 — 2026-10-29
+- La carte affiche le vent (km/h) à côté de la température extérieure quand une source de vent est configurée.
+- Capture de la carte dans le README.
+
 ## 1.1.0 — 2026-10-29
 - Carte Lovelace `custom:bain-nordique-card` intégrée et chargée automatiquement : température,
   état, cible réglable, prévision, courbe mesurée + prévue, boutons et statistiques.

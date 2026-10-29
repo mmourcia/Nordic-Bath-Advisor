@@ -11,6 +11,10 @@ avec ou sans maintien électrique. Elle répond à :
 
 Tout est appris à partir des courbes, sans réglage : il suffit de choisir les entités.
 
+![Carte Bain nordique pendant un feu, thèmes clair et sombre](docs/carte.png)
+
+*La carte livrée avec l'intégration, pendant un feu : température, cible, heure d'arrivée à 38 °C avec sa fourchette, pic prévu, courbe mesurée et prévue, statistiques.*
+
 ## Installation
 
 ### Via HACS
@@ -107,7 +111,7 @@ type: custom:bain-nordique-card
 ```
 
 Elle est aussi proposée dans le sélecteur de cartes (« Bain nordique »). Elle affiche :
-la température de l'eau et l'état, la cible réglable (− / +), la prévision (si feu maintenant
+la température de l'eau et l'état, la cible réglable (− / +), la température extérieure et le vent (si une source de vent est configurée), la prévision (si feu maintenant
 ou feu en cours, avec fourchette et pic), une courbe des dernières heures prolongée par la
 prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques. Un clic sur une
 valeur ouvre l'historique de l'entité.
