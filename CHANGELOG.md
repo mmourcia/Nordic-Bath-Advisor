@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2 — 2026-10-29
+- Le délai d'allumage retrouve sa classe d'état « mesure ». Cela fait disparaître la correction
+  « n'a plus de classe d'état » quand le capteur reprend l'identifiant d'une ancienne version.
+- La capture du README s'affiche aussi dans HACS (adresse absolue).
+
 ## 1.2.1 — 2026-10-29
 - Correctif : la relecture de l'historique plantait avec les états du recorder (`LazyState` sans
   attribut `domain`), et l'intégration restait bloquée en « Lecture de l'historique… » sans rien
