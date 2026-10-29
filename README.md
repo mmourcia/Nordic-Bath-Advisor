@@ -103,7 +103,7 @@ Exemples de notifications : [`examples/automations.yaml`](examples/automations.y
 
 ## Carte Lovelace
 
-L'intégration embarque sa propre carte, chargée automatiquement (aucune ressource à déclarer).
+L'intégration embarque sa propre carte. Elle la déclare elle-même comme ressource Lovelace et met à jour son numéro de version : il n'y a rien à configurer, y compris dans l'application mobile.
 Une seule ligne suffit, les entités sont trouvées seules :
 
 ```yaml

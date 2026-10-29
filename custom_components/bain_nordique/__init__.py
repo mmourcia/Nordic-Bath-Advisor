@@ -22,7 +22,7 @@ type BainConfigEntry = ConfigEntry[BainCoordinator]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Sert la carte Lovelace et la charge dans le frontend (aucune ressource à déclarer)."""
+    """Sert la carte Lovelace et la fait charger par le frontend, sans réglage manuel."""
     if "http" not in hass.config.components or getattr(hass, "http", None) is None:
         return True
     try:
@@ -32,9 +32,35 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         path = Path(__file__).parent / "frontend" / "bain-nordique-card.js"
         await hass.http.async_register_static_paths(
             [StaticPathConfig(CARD_URL, str(path), cache_headers=False)])
-        add_extra_js_url(hass, f"{CARD_URL}?v={VERSION}")
+        if not await _async_register_resource(hass):
+            add_extra_js_url(hass, f"{CARD_URL}?v={VERSION}")
     except Exception as err:  # noqa: BLE001 - la carte est un plus, pas un prérequis
         _LOGGER.warning("Carte Lovelace non chargée : %s", err)
+    return True
+
+
+async def _async_register_resource(hass: HomeAssistant) -> bool:
+    """Déclare la carte comme ressource Lovelace et tient sa version à jour.
+
+    L'application mobile charge les ressources de façon fiable, alors qu'elle
+    peut garder en cache une page sans le script ajouté par add_extra_js_url.
+    Retourne False si les ressources ne sont pas gérées par l'interface (mode YAML)."""
+    from homeassistant.components.lovelace.const import LOVELACE_DATA
+
+    data = hass.data.get(LOVELACE_DATA)
+    if data is None or data.resource_mode != "storage":
+        return False
+    resources = data.resources
+    if not resources.loaded:
+        await resources.async_load()
+        resources.loaded = True
+    url = f"{CARD_URL}?v={VERSION}"
+    for item in resources.async_items():
+        if item["url"].split("?")[0] == CARD_URL:
+            if item["url"] != url:
+                await resources.async_update_item(item["id"], {"res_type": "module", "url": url})
+            return True
+    await resources.async_create_item({"res_type": "module", "url": url})
     return True
 
 
