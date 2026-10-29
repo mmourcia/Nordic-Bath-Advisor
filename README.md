@@ -90,6 +90,7 @@ Les identifiants dépendent de la langue de Home Assistant ; ceux ci-dessous son
 | `sensor.bain_nordique_temps_moyen_jusqu_a_38_degc`, `…_39_degc`, `…_jusqu_a_la_cible` | moyenne des 10 derniers feux partis du maintien, depuis l'allumage |
 | `sensor.bain_nordique_vitesse_de_montee_moyenne`, `…_pic_du_dernier_feu` | stats de chauffe ; le dernier feu détaillé en attributs |
 | `sensor.bain_nordique_pertes_actuelles` | °C/h perdus maintenant |
+| `sensor.bain_nordique_temperature_exterieure`, `…_vent` | copies de la source extérieure (et du vent), avec courbe et statistiques même si la source est une entité météo |
 | `sensor.bain_nordique_coefficient_de_pertes`, `…_sensibilite_au_vent` | diagnostic (vent : % de pertes en plus par 10 km/h) |
 | `sensor.bain_nordique_consigne_du_maintien_electrique`, `…_delai_d_allumage`, `…_chaleur_du_feu_habituel` | diagnostic |
 | `binary_sensor.bain_nordique_feu_en_cours`, `…_bain_pret`, `…_sonde_hors_de_l_eau` | |
@@ -114,7 +115,7 @@ Elle est aussi proposée dans le sélecteur de cartes (« Bain nordique »). Ell
 la température de l'eau et l'état, la cible réglable (− / +), la température extérieure et le vent (si une source de vent est configurée), la prévision (si feu maintenant
 ou feu en cours, avec fourchette et pic), une courbe des dernières heures prolongée par la
 prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques. Un clic sur une
-valeur ouvre l'historique de l'entité.
+valeur ouvre l'historique de l'entité, y compris la température extérieure, le vent et les pertes.
 
 Options :
 ```yaml

@@ -79,6 +79,8 @@ async def test_setup_and_predict(hass: HomeAssistant) -> None:
     await hass.async_block_till_done()
     assert hass.states.get(eid("binary_sensor", "feu_en_cours")).state == "on"
     assert int(hass.states.get(eid("sensor", "intensite_feu")).state) > 0
+    assert float(hass.states.get(eid("sensor", "temperature_exterieure")).state) == 8.0
+    assert float(hass.states.get(eid("sensor", "vent")).state) == 18.0   # 5 m/s
     for key in ("conseil", "nombre_feux", "coef_pertes", "sensibilite_vent"):
         assert hass.states.get(eid("sensor", key)) is not None
     assert await hass.config_entries.async_unload(entry.entry_id)

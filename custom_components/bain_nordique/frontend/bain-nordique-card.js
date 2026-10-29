@@ -9,7 +9,7 @@
  *
  * Les entités sont trouvées seules via l'attribut `entites` du capteur d'état.
  */
-const VERSION = "1.2.2";
+const VERSION = "1.3.0";
 
 const STATE_LABEL = {
   hold: "Maintien électrique",
@@ -151,7 +151,7 @@ class BainNordiqueCard extends HTMLElement {
       const value = Math.min(44, Math.max(30, cur + parseFloat(el.dataset.step)));
       this._hass.callService("number", "set_value", { entity_id: ents.cible, value });
     } else if (action === "more") {
-      const id = el.dataset.entity || ents[el.dataset.key];
+      const id = ents[el.dataset.key] || el.dataset.entity;
       if (id) {
         this.dispatchEvent(new CustomEvent("hass-more-info", {
           detail: { entityId: id }, bubbles: true, composed: true,
@@ -248,9 +248,13 @@ class BainNordiqueCard extends HTMLElement {
               <div class="target-v">${num(target, 1)} °C</div>
               <button class="round" data-action="target" data-step="0.5">+</button>
             </div>
-            <div class="ext"><ha-icon icon="mdi:thermometer"></ha-icon>${num(te, 1)} °C${wind !== null && wind !== undefined
-              ? ` · <ha-icon icon="mdi:weather-windy"></ha-icon>${num(wind, 0)} km/h` : ""}</div>
-            <div class="ext">pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</div>
+            <div class="ext"><span class="link" data-action="more" data-key="temperature_exterieure"
+                data-entity="${a.exterieur || ""}" title="Historique de la température extérieure"><ha-icon
+                icon="mdi:thermometer"></ha-icon>${num(te, 1)} °C</span>${wind !== null && wind !== undefined
+              ? ` · <span class="link" data-action="more" data-key="vent" title="Historique du vent"><ha-icon
+                icon="mdi:weather-windy"></ha-icon>${num(wind, 0)} km/h</span>` : ""}</div>
+            <div class="ext"><span class="link" data-action="more" data-key="pertes_actuelles"
+                title="Historique des pertes">pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</span></div>
           </div>
         </div>
         ${prediction}
@@ -337,6 +341,8 @@ class BainNordiqueCard extends HTMLElement {
       .target { text-align: right; }
       .target-l, .ext { font-size: .8em; color: var(--secondary-text-color); }
       .ext ha-icon { --mdc-icon-size: 14px; vertical-align: -2px; margin-right: 1px; }
+      .link { cursor: pointer; border-radius: 6px; padding: 1px 3px; margin: 0 -3px; }
+      .link:hover { background: var(--secondary-background-color); color: var(--primary-text-color); }
       .target-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin: 2px 0; }
       .target-v { font-size: 1.3em; min-width: 72px; text-align: center; color: var(--primary-text-color); }
       button { font: inherit; cursor: pointer; border: none; }

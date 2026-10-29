@@ -11,7 +11,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import EntityCategory, UnitOfTemperature, UnitOfTime
+from homeassistant.const import EntityCategory, UnitOfSpeed, UnitOfTemperature, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -183,6 +183,22 @@ SENSORS: tuple[BainSensorDescription, ...] = (
     ),
 )
 
+OUTDOOR_SENSOR = BainSensorDescription(
+    key="temperature_exterieure", icon="mdi:thermometer",
+    device_class=SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=UnitOfTemperature.CELSIUS, suggested_display_precision=1,
+    value_fn=lambda c: round(c.data["te"], 2) if c.data.get("te") is not None else None,
+    attr_fn=lambda c: {"source": c.outdoor},
+)
+
+WIND_SPEED_SENSOR = BainSensorDescription(
+    key="vent", icon="mdi:weather-windy",
+    device_class=SensorDeviceClass.WIND_SPEED, state_class=SensorStateClass.MEASUREMENT,
+    native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR, suggested_display_precision=0,
+    value_fn=lambda c: round(c.data["wind"], 1) if c.data.get("wind") is not None else None,
+    attr_fn=lambda c: {"source": c.wind},
+)
+
 WIND_SENSOR = BainSensorDescription(
     key="sensibilite_vent", icon="mdi:weather-windy", native_unit_of_measurement="%",
     suggested_display_precision=0, entity_category=EntityCategory.DIAGNOSTIC,
@@ -194,7 +210,8 @@ WIND_SENSOR = BainSensorDescription(
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback) -> None:
     coord: BainCoordinator = entry.runtime_data
-    descs = list(SENSORS) + ([WIND_SENSOR] if coord.wind else [])
+    descs = list(SENSORS) + [OUTDOOR_SENSOR]
+    descs += [WIND_SPEED_SENSOR, WIND_SENSOR] if coord.wind else []
     async_add_entities(BainSensor(coord, d) for d in descs)
 
 
