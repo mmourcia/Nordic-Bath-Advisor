@@ -1,7 +1,7 @@
 {
   "domain": "bain_nordique",
   "name": "Bain nordique",
-  "after_dependencies": ["recorder"],
+  "after_dependencies": ["frontend", "http", "recorder"],
   "codeowners": ["@mmourcia"],
   "config_flow": true,
   "documentation": "https://github.com/mmourcia/Nordic-Bath-Advisor",
@@ -9,5 +9,5 @@
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/mmourcia/Nordic-Bath-Advisor/issues",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.1.0"
 }
