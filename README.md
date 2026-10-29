@@ -176,6 +176,10 @@ series:
 sans deep sleep. Home Assistant n'enregistre que les changements, l'historique reste léger.
 
 ## Développement
+Publier une version : changer `version` dans `custom_components/bain_nordique/manifest.json`
+(et `VERSION` dans `const.py`), ajouter sa section au `CHANGELOG.md`, puis fusionner dans `main`.
+Le workflow *Release* crée alors la release GitHub `vX.Y.Z` avec les notes du changelog, et HACS la propose.
+
 ```bash
 pip install pytest-homeassistant-custom-component
 pytest -q
