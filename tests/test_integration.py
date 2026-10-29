@@ -52,6 +52,12 @@ async def test_setup_and_predict(hass: HomeAssistant) -> None:
     assert hass.states.get(eid("sensor", "heure_cible")).state not in ("unknown", "unavailable")
     assert float(hass.states.get(eid("sensor", "pic_prevu")).state) > 36
     assert hass.states.get(eid("sensor", "etat")).state is not None
+    coord.async_set_updated_data(coord.compute())        # toutes les plateformes sont en place
+    await hass.async_block_till_done()
+    info = hass.states.get(eid("sensor", "etat")).attributes
+    assert info["integration"] == DOMAIN and info["sonde_eau"] == WATER
+    assert info["entites"]["cible"] == eid("number", "cible")
+    assert info["entites"]["feu_allume"] == eid("button", "feu_allume")
 
     # la sonde chauffe : 2,5 °C/h pendant 1 h
     now = dt_util.utcnow()

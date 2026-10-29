@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 — 2026-10-29
+- Carte Lovelace `custom:bain-nordique-card` intégrée et chargée automatiquement : température,
+  état, cible réglable, prévision, courbe mesurée + prévue, boutons et statistiques.
+- Le capteur d'état expose la liste des entités et des sondes (attributs `entites`, `sonde_eau`).
+
 ## 1.0.0 — 2026-10-29
 Refonte complète (remplace la v0.8 « bûches / mode rapide »).
 - Sonde d'eau quelconque ; température extérieure par capteur **ou** entité météo ; vent optionnel.

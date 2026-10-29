@@ -97,7 +97,33 @@ Les identifiants dépendent de la langue de Home Assistant ; ceux ci-dessous son
 `late_declaration`, `fire_failed`, `fire_cancelled`, `relearn_started`.
 Exemples de notifications : [`examples/automations.yaml`](examples/automations.yaml).
 
-## Tableau de bord
+## Carte Lovelace
+
+L'intégration embarque sa propre carte, chargée automatiquement (aucune ressource à déclarer).
+Une seule ligne suffit, les entités sont trouvées seules :
+
+```yaml
+type: custom:bain-nordique-card
+```
+
+Elle est aussi proposée dans le sélecteur de cartes (« Bain nordique »). Elle affiche :
+la température de l'eau et l'état, la cible réglable (− / +), la prévision (si feu maintenant
+ou feu en cours, avec fourchette et pic), une courbe des dernières heures prolongée par la
+prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques. Un clic sur une
+valeur ouvre l'historique de l'entité.
+
+Options :
+```yaml
+type: custom:bain-nordique-card
+title: Bain nordique     # titre
+hours: 12                # heures d'historique sur la courbe
+entity: sensor.bain_nordique_etat   # seulement si plusieurs bains
+```
+
+Après une mise à jour, si l'ancienne carte reste affichée, vide le cache du navigateur
+(ou tire vers le bas pour rafraîchir dans l'application mobile).
+
+## Tableau de bord avec les cartes standard
 
 ```yaml
 type: vertical-stack

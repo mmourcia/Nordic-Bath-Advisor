@@ -66,6 +66,7 @@ SENSORS: tuple[BainSensorDescription, ...] = (
     BainSensorDescription(
         key="etat", icon="mdi:hot-tub", device_class=SensorDeviceClass.ENUM, options=STATES,
         value_fn=lambda c: c.data.get("state"),
+        attr_fn=lambda c: c.card_info(),
     ),
     BainSensorDescription(
         key="conseil", icon="mdi:message-text-outline",

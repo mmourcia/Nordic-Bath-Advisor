@@ -4,7 +4,7 @@ from __future__ import annotations
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import DOMAIN, VERSION
 from .coordinator import BainCoordinator
 
 
@@ -18,5 +18,5 @@ class BainEntity(CoordinatorEntity[BainCoordinator]):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.entry.entry_id)},
             name="Bain nordique", manufacturer="Nordic Bath Advisor",
-            model="Prévision de chauffe au bois", sw_version="1.0.0",
+            model="Prévision de chauffe au bois", sw_version=VERSION,
         )

@@ -310,6 +310,20 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
     async def _async_update_data(self) -> dict:
         return self.compute()
 
+    def card_info(self) -> dict:
+        """Ce dont la carte Lovelace a besoin pour se configurer seule."""
+        from homeassistant.helpers import entity_registry as er
+
+        prefix = f"{self.entry.entry_id}_"
+        ents = {e.unique_id.removeprefix(prefix): e.entity_id
+                for e in er.async_entries_for_config_entry(er.async_get(self.hass), self.entry.entry_id)
+                if e.unique_id.startswith(prefix)}
+        p = self.params
+        return {"integration": DOMAIN, "entites": ents, "sonde_eau": self.water,
+                "exterieur": self.outdoor, "temperature_eau": self.data.get("tw") if self.data else None,
+                "temperature_exterieure": self.data.get("te") if self.data else None,
+                "maintien_bas": p.hold_low, "maintien_haut": p.hold_high}
+
     # ------------------------------------------------------------ calcul
     def compute(self) -> dict:
         now = dt_util.utcnow()
