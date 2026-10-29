@@ -1,0 +1,69 @@
+# Sonde de température de l'eau du bain nordique — version alimentée sur secteur
+# Carte : OLIMEX ESP32-C3-DevKit-LiPo (n'importe quel ESP32 convient)
+# Sonde : DS18B20 étanche sur GPIO0 (résistance de rappel 4,7 kΩ vers 3,3 V)
+#
+# Plus de deep sleep : une mesure toutes les 30 s. Home Assistant n'enregistre
+# que les changements (pas de 0,0625 °C), l'historique reste donc léger.
+# L'intégration Bain nordique accepte n'importe quelle sonde de température :
+# ce fichier n'est qu'un exemple.
+
+esphome:
+  name: sonde-bain-nordique
+  friendly_name: Sonde bain nordique
+
+esp32:
+  variant: esp32c3
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret sonde_bain_api_key
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: Sonde bain nord Fallback Hotspot
+    password: !secret sonde_bain_ap_password
+
+captive_portal:
+
+one_wire:
+  - platform: gpio
+    pin: GPIO0
+    id: one_wire_bus
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: one_wire_bus
+    address: 0xd9115d5e1e64ff28     # à adapter : l'adresse s'affiche dans les logs au démarrage
+    name: "Température eau"
+    id: temperature_eau
+    update_interval: 30s
+    icon: "mdi:coolant-temperature"
+    filters:
+      # une lecture aberrante isolée (85 °C, -127 °C) est écartée
+      - filter_out: 85.0
+      - filter_out: -127.0
+
+  - platform: wifi_signal
+    name: "Signal Wi-Fi"
+    update_interval: 5min
+    entity_category: diagnostic
+
+  - platform: uptime
+    name: "Durée de fonctionnement"
+    update_interval: 5min
+    entity_category: diagnostic
+
+button:
+  - platform: restart
+    name: "Redémarrer"
+    entity_category: config

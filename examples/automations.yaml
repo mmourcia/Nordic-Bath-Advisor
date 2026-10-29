@@ -1,0 +1,48 @@
+# Automatisations d'exemple pour l'intégration Bain nordique.
+# Remplacer notify.mobile_app_mon_telephone par ton service de notification et
+# vérifier les identifiants d'entités (HA peut les préfixer par la pièce).
+
+# 1. Prévenir quand l'eau atteint la température visée
+- id: bain_nordique_pret
+  alias: Bain nordique - prêt
+  triggers:
+    - trigger: event
+      event_type: bain_nordique_event
+      event_data:
+        type: target_reached
+  actions:
+    - action: notify.mobile_app_mon_telephone
+      data:
+        title: "🛁 Bain prêt"
+        message: >-
+          L'eau est à {{ trigger.event.data.eau }} °C
+          (pic prévu {{ states('sensor.bain_nordique_pic_prevu') }} °C
+          vers {{ as_timestamp(states('sensor.bain_nordique_heure_du_pic')) | timestamp_custom('%H:%M') }}).
+
+# 2. Feu détecté sans que le bouton « Feu allumé » ait été pressé : simple info
+- id: bain_nordique_feu_detecte
+  alias: Bain nordique - feu détecté
+  triggers:
+    - trigger: event
+      event_type: bain_nordique_event
+      event_data:
+        type: fire_start
+  actions:
+    - action: notify.mobile_app_mon_telephone
+      data:
+        title: "🔥 Feu détecté"
+        message: "{{ states('sensor.bain_nordique_conseil') }}"
+
+# 3. Sonde sortie de l'eau (ou débranchée)
+- id: bain_nordique_sonde
+  alias: Bain nordique - sonde hors de l'eau
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.bain_nordique_sonde_hors_de_l_eau
+      to: "on"
+      for: "00:30:00"
+  actions:
+    - action: notify.mobile_app_mon_telephone
+      data:
+        title: Bain nordique
+        message: La sonde semble hors de l'eau depuis 30 min.

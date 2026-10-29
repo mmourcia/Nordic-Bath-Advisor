@@ -1,0 +1,130 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nordic bath",
+        "description": "Pick the water probe and an outdoor temperature (a sensor or a weather entity). Wind is optional: a weather entity or a wind sensor lets the integration learn how wind increases losses.",
+        "data": {
+          "water_sensor": "Water temperature",
+          "outdoor_sensor": "Outdoor temperature (sensor or weather)",
+          "wind_sensor": "Wind (weather or sensor, optional)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This water probe is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Outdoor sources",
+        "data": {
+          "outdoor_sensor": "Outdoor temperature (sensor or weather)",
+          "wind_sensor": "Wind (weather or sensor, optional)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "etat": {
+        "name": "State",
+        "state": {
+          "hold": "Electric keep-warm",
+          "cooling": "Cooling",
+          "lit": "Fire lit, waiting for rise",
+          "fire": "Fire",
+          "probe_out": "Probe out of water"
+        }
+      },
+      "conseil": {
+        "name": "Advice"
+      },
+      "heure_cible": {
+        "name": "Target reached at"
+      },
+      "duree_avant_cible": {
+        "name": "Time to target"
+      },
+      "pic_prevu": {
+        "name": "Expected peak"
+      },
+      "heure_pic": {
+        "name": "Peak time"
+      },
+      "intensite_feu": {
+        "name": "Fire intensity"
+      },
+      "sous_la_cible": {
+        "name": "Below target at"
+      },
+      "nombre_feux": {
+        "name": "Fires"
+      },
+      "feux_30_jours": {
+        "name": "Fires (30 days)"
+      },
+      "temps_moyen_38": {
+        "name": "Average time to 38 °C"
+      },
+      "temps_moyen_39": {
+        "name": "Average time to 39 °C"
+      },
+      "temps_moyen_cible": {
+        "name": "Average time to target"
+      },
+      "montee_moyenne": {
+        "name": "Average heating rate"
+      },
+      "dernier_feu": {
+        "name": "Last fire peak"
+      },
+      "pertes_actuelles": {
+        "name": "Current heat loss"
+      },
+      "coef_pertes": {
+        "name": "Loss coefficient"
+      },
+      "consigne_maintien": {
+        "name": "Electric keep-warm setpoint"
+      },
+      "delai_allumage": {
+        "name": "Ignition delay"
+      },
+      "courbe_feu": {
+        "name": "Usual fire heat"
+      },
+      "sensibilite_vent": {
+        "name": "Wind sensitivity"
+      }
+    },
+    "binary_sensor": {
+      "feu_en_cours": {
+        "name": "Fire burning"
+      },
+      "bain_pret": {
+        "name": "Bath ready"
+      },
+      "sonde_hors_eau": {
+        "name": "Probe out of water"
+      }
+    },
+    "button": {
+      "feu_allume": {
+        "name": "Fire lit"
+      },
+      "pas_de_feu": {
+        "name": "No fire"
+      },
+      "reapprendre": {
+        "name": "Relearn from history"
+      }
+    },
+    "number": {
+      "cible": {
+        "name": "Target temperature"
+      }
+    }
+  }
+}
