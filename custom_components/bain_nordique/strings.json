@@ -97,6 +97,12 @@
       },
       "sensibilite_vent": {
         "name": "Wind sensitivity"
+      },
+      "temperature_exterieure": {
+        "name": "Outdoor temperature"
+      },
+      "vent": {
+        "name": "Wind"
       }
     },
     "binary_sensor": {

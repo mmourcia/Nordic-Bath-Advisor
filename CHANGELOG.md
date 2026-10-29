@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 — 2026-10-29
+- Nouveaux capteurs **Température extérieure** et **Vent** (si une source de vent est configurée), qui
+  recopient la source choisie. Ils ont une courbe et des statistiques long terme, même quand la source
+  est une entité météo.
+- Dans la carte, la température extérieure, le vent et les pertes sont cliquables : un clic ouvre leur
+  historique.
+
 ## 1.2.2 — 2026-10-29
 - Le délai d'allumage retrouve sa classe d'état « mesure ». Cela fait disparaître la correction
   « n'a plus de classe d'état » quand le capteur reprend l'identifiant d'une ancienne version.
