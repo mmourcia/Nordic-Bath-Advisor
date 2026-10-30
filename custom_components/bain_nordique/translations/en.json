@@ -18,12 +18,16 @@
   "options": {
     "step": {
       "init": {
-        "title": "Outdoor sources",
+        "title": "Probes",
         "data": {
+          "water_sensor": "Water temperature",
           "outdoor_sensor": "Outdoor temperature (sensor or weather)",
           "wind_sensor": "Wind (weather or sensor, optional)"
         }
       }
+    },
+    "error": {
+      "already_configured": "This water probe is already used by another nordic bath"
     }
   },
   "entity": {

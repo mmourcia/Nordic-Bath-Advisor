@@ -94,3 +94,30 @@ async def test_migrate_v1(hass: HomeAssistant) -> None:
     assert await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
     assert entry.version == 2
+
+
+async def test_options_change_water_probe(hass: HomeAssistant) -> None:
+    _states(hass)
+    hass.states.async_set("sensor.eau2", "33.5", {"unit_of_measurement": "°C",
+                                                  "device_class": "temperature"})
+    entry = MockConfigEntry(domain=DOMAIN, version=2, unique_id=WATER,
+                            data={CONF_WATER: WATER, CONF_OUTDOOR: WEATHER})
+    entry.add_to_hass(hass)
+    other = MockConfigEntry(domain=DOMAIN, version=2, unique_id="sensor.autre",
+                            data={CONF_WATER: "sensor.autre", CONF_OUTDOOR: WEATHER})
+    other.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert CONF_WATER in result["data_schema"].schema
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_WATER: "sensor.autre", CONF_OUTDOOR: WEATHER})
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {CONF_WATER: "already_configured"}
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_WATER: "sensor.eau2", CONF_OUTDOOR: WEATHER})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    assert entry.unique_id == "sensor.eau2"
+    assert entry.runtime_data.water == "sensor.eau2"

@@ -44,10 +44,21 @@ class BainConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class BainOptionsFlow(OptionsFlow):
-    """Changer la température extérieure ou le vent sans tout réinstaller."""
+    """Changer les sondes sans tout réinstaller : l'apprentissage est conservé."""
 
     async def async_step_init(self, user_input: dict | None = None) -> ConfigFlowResult:
-        current = {**self.config_entry.data, **self.config_entry.options}
+        entry = self.config_entry
+        current = {**entry.data, **entry.options}
+        errors: dict[str, str] = {}
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
-        return self.async_show_form(step_id="init", data_schema=_schema(current, False))
+            water = user_input[CONF_WATER]
+            if any(e.unique_id == water for e in self.hass.config_entries.async_entries(DOMAIN)
+                   if e.entry_id != entry.entry_id):
+                errors[CONF_WATER] = "already_configured"
+            else:
+                if entry.unique_id != water:
+                    self.hass.config_entries.async_update_entry(entry, unique_id=water)
+                return self.async_create_entry(data=user_input)
+            current = {**current, **user_input}
+        return self.async_show_form(step_id="init", data_schema=_schema(current, True),
+                                    errors=errors)

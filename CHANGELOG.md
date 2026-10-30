@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1 — 2026-10-30
+- L'intégration apparaît désormais dans l'onglet **Intégrations** (et dans sa recherche) au lieu de
+  l'onglet **Entrées** : elle est déclarée comme service et non plus comme entrée. Rien ne change pour
+  les entités, l'historique ou les réglages.
+- Les options permettent aussi de changer la **sonde d'eau** (remplacement de la sonde) sans réinstaller :
+  l'apprentissage (maintien, courbe de feu, pertes) est conservé.
+
 ## 1.3.0 — 2026-10-29
 - Nouveaux capteurs **Température extérieure** et **Vent** (si une source de vent est configurée), qui
   recopient la source choisie. Ils ont une courbe et des statistiques long terme, même quand la source

@@ -18,12 +18,16 @@
   "options": {
     "step": {
       "init": {
-        "title": "Sources extérieures",
+        "title": "Sondes",
         "data": {
+          "water_sensor": "Température de l'eau",
           "outdoor_sensor": "Température extérieure (capteur ou météo)",
           "wind_sensor": "Vent (météo ou capteur, optionnel)"
         }
       }
+    },
+    "error": {
+      "already_configured": "Cette sonde d'eau est déjà utilisée par un autre bain nordique"
     }
   },
   "entity": {
