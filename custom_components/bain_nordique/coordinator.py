@@ -9,6 +9,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     EVENT_HOMEASSISTANT_STARTED,
+    UnitOfEnergy,
+    UnitOfPower,
     UnitOfSpeed,
     UnitOfTemperature,
 )
@@ -17,13 +19,21 @@ from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt as dt_util
-from homeassistant.util.unit_conversion import SpeedConverter, TemperatureConverter
+from homeassistant.util.unit_conversion import (
+    EnergyConverter,
+    PowerConverter,
+    SpeedConverter,
+    TemperatureConverter,
+)
 
 from .const import (
     BOOTSTRAP_DAYS,
     CONF_OUTDOOR,
+    CONF_POWER,
+    CONF_PRICE,
     CONF_WATER,
     CONF_WIND,
+    DEFAULT_PRICE,
     DEFAULT_TARGET,
     DOMAIN,
     EVENT,
@@ -31,10 +41,12 @@ from .const import (
     SHOWN_TARGETS,
     STAT_TARGETS,
 )
+from .energy import HeaterMeter
 from .model import Engine, Params
 
 _LOGGER = logging.getLogger(__name__)
 STORE_VERSION = 1
+ENERGY_SAVE_EVERY = timedelta(minutes=15)
 SPREAD = 0.2                     # fourchette : feu 20 % moins / plus généreux
 LIVE_EVENTS = {"fire_start", "fire_end", "fire_discarded", "fire_failed", "opened",
                "probe_out", "probe_back", "hold_learned"}
@@ -83,6 +95,25 @@ def read_wind(state: State | None) -> float | None:
     return value
 
 
+def read_power(state: State | None) -> tuple[str, float] | None:
+    """('kwh', index du compteur) ou ('w', puissance) depuis le capteur de la prise."""
+    if state is None or state.state in ("unknown", "unavailable"):
+        return None
+    try:
+        value = float(state.state)
+    except ValueError:
+        return None
+    unit = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
+    try:
+        if unit in EnergyConverter.VALID_UNITS:
+            return "kwh", EnergyConverter.convert(value, unit, UnitOfEnergy.KILO_WATT_HOUR)
+        if unit in PowerConverter.VALID_UNITS:
+            return "w", PowerConverter.convert(value, unit, UnitOfPower.WATT)
+    except Exception:  # noqa: BLE001
+        return None
+    return None
+
+
 def _mean(values: list[float]) -> float | None:
     return round(sum(values) / len(values), 1) if values else None
 
@@ -98,6 +129,9 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         self.water: str = conf[CONF_WATER]
         self.outdoor: str | None = conf.get(CONF_OUTDOOR)
         self.wind: str | None = conf.get(CONF_WIND)
+        self.power: str | None = conf.get(CONF_POWER)
+        self.price: float = conf.get(CONF_PRICE, DEFAULT_PRICE)
+        self.meter = HeaterMeter(source=self.power)
         self.params = Params()
         self.engine = Engine(self.params, [], use_wind=bool(self.wind))
         self.target: float = DEFAULT_TARGET
@@ -106,6 +140,7 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         self._notified: set[str] = set()
         self._store: Store = Store(hass, STORE_VERSION, f"{DOMAIN}.{entry.entry_id}")
         self._bootstrapped = False
+        self._energy_saved = dt_util.utcnow()
 
     # ------------------------------------------------------------ persistance
     async def async_setup(self) -> None:
@@ -114,12 +149,15 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         self.engine = Engine(self.params, stored.get("fires", []), use_wind=bool(self.wind))
         self.engine.last_k = stored.get("last_k")
         self.target = stored.get("target", DEFAULT_TARGET)
+        self.meter = HeaterMeter(stored.get("energy"), source=self.power)
+        if self.power:
+            self._on_power(self.hass.states.get(self.power), dt_util.utcnow())
         self._bootstrapped = stored.get("bootstrapped", False)
         last_ts = stored.get("last_ts")
         self.engine.set_outdoor(self._outdoor_now())
         self.engine.set_wind(self._wind_now())
 
-        ids = [self.water] + [e for e in (self.outdoor, self.wind) if e]
+        ids = [self.water] + [e for e in (self.outdoor, self.wind, self.power) if e]
         self.entry.async_on_unload(async_track_state_change_event(self.hass, ids, self._on_state))
 
         resume = dt_util.parse_datetime(last_ts) if last_ts else None
@@ -139,7 +177,8 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         return {"params": self.params.as_dict(), "fires": e.fires[-500:], "last_k": e.last_k,
                 "target": self.target, "bootstrapped": self._bootstrapped,
                 "last_ts": e.last_ts.isoformat() if e.last_ts else None,
-                "declared": e.declared.isoformat() if e.declared else None}
+                "declared": e.declared.isoformat() if e.declared else None,
+                "energy": self.meter.as_dict()}
 
     def _save_later(self) -> None:
         self._store.async_delay_save(self._snapshot, 30)
@@ -263,6 +302,9 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         if new is None:
             return
         eid = event.data["entity_id"]
+        if eid == self.power:
+            self._on_power(new, new.last_updated)
+            return
         if eid == self.water:
             kind, value = "w", read_temperature(new)
         elif eid == self.outdoor:
@@ -290,6 +332,16 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         if save:
             self._save_later()
         self.async_set_updated_data(self.compute())
+
+    def _on_power(self, state: State | None, ts: datetime) -> None:
+        reading = read_power(state)
+        if reading is None:
+            return
+        kind, value = reading
+        if kind == "kwh":
+            self.meter.add_counter(ts, value)
+        else:
+            self.meter.set_power(ts, value)
 
     def _check_target(self) -> None:
         f = self.engine.fire
@@ -323,6 +375,12 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         self.async_set_updated_data(self.compute())
 
     async def _async_update_data(self) -> dict:
+        if self.power:
+            now = dt_util.utcnow()
+            self.meter.tick(now, self._outdoor_now())
+            if now - self._energy_saved >= ENERGY_SAVE_EVERY:      # pas une écriture par minute
+                self._energy_saved = now
+                self._save_later()
         return self.compute()
 
     def card_info(self) -> dict:
@@ -351,7 +409,8 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
         d: dict = {"tw": tw, "te": te, "wind": wind, "target": self.target,
                    "in_fire": fire is not None, "probe_out": e.probe_out is not None,
                    "declared": e.declared is not None, "replaying": self.replaying,
-                   "stats": self._stats(now)}
+                   "stats": self._stats(now),
+                   "energy": self.meter.summary(now, self.price) if self.power else None}
         floor = p.floor(now)
         if e.probe_out:
             d["state"] = "probe_out"

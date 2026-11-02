@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -11,9 +12,16 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import EntityCategory, UnitOfSpeed, UnitOfTemperature, UnitOfTime
+from homeassistant.const import (
+    EntityCategory,
+    UnitOfEnergy,
+    UnitOfSpeed,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .coordinator import BainCoordinator
 from .entity import BainEntity
@@ -25,6 +33,8 @@ STATES = ["hold", "cooling", "lit", "fire", "probe_out"]
 class BainSensorDescription(SensorEntityDescription):
     value_fn: Callable[[BainCoordinator], Any]
     attr_fn: Callable[[BainCoordinator], dict] | None = None
+    unit_fn: Callable[[BainCoordinator], str] | None = None
+    daily: bool = False               # remis à zéro à minuit (last_reset)
 
 
 def _iso(v):
@@ -208,10 +218,54 @@ WIND_SENSOR = BainSensorDescription(
 )
 
 
+def _energy(c: BainCoordinator) -> dict:
+    return c.data.get("energy") or {}
+
+
+def _money(c: BainCoordinator) -> str:
+    return c.hass.config.currency
+
+
+def _money_per_day(c: BainCoordinator) -> str:
+    cur = c.hass.config.currency
+    return f"{'€' if cur == 'EUR' else cur}/j"
+
+
+ENERGY_SENSORS: tuple[BainSensorDescription, ...] = (
+    BainSensorDescription(
+        key="energie_maintien_jour", icon="mdi:lightning-bolt",
+        device_class=SensorDeviceClass.ENERGY, state_class=SensorStateClass.TOTAL,
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR, suggested_display_precision=2,
+        daily=True,
+        value_fn=lambda c: _energy(c).get("kwh_today"),
+        attr_fn=lambda c: {"source": c.power},
+    ),
+    BainSensorDescription(
+        key="cout_maintien_jour", icon="mdi:cash",
+        device_class=SensorDeviceClass.MONETARY, state_class=SensorStateClass.TOTAL,
+        suggested_display_precision=2, unit_fn=_money, daily=True,
+        value_fn=lambda c: _energy(c).get("cost_today"),
+        attr_fn=lambda c: {"prix_kwh": c.price},
+    ),
+    BainSensorDescription(
+        key="cout_maintien_moyen", icon="mdi:cash-clock",
+        state_class=SensorStateClass.MEASUREMENT, suggested_display_precision=2,
+        unit_fn=_money_per_day,
+        value_fn=lambda c: _energy(c).get("per_day_cost"),
+        attr_fn=lambda c: {"kwh_par_jour": _energy(c).get("per_day_kwh"),
+                           "jours_comptes": _energy(c).get("days_counted"),
+                           "estimation_sur_la_journee": _energy(c).get("estimate"),
+                           "prix_kwh": c.price,
+                           "historique": _energy(c).get("days")},
+    ),
+)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback) -> None:
     coord: BainCoordinator = entry.runtime_data
     descs = list(SENSORS) + [OUTDOOR_SENSOR]
     descs += [WIND_SPEED_SENSOR, WIND_SENSOR] if coord.wind else []
+    descs += list(ENERGY_SENSORS) if coord.power else []
     async_add_entities(BainSensor(coord, d) for d in descs)
 
 
@@ -225,6 +279,15 @@ class BainSensor(BainEntity, SensorEntity):
     @property
     def native_value(self):
         return self.entity_description.value_fn(self.coordinator)
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        fn = self.entity_description.unit_fn
+        return fn(self.coordinator) if fn else super().native_unit_of_measurement
+
+    @property
+    def last_reset(self) -> datetime | None:
+        return dt_util.start_of_local_day() if self.entity_description.daily else None
 
     @property
     def extra_state_attributes(self) -> dict | None:

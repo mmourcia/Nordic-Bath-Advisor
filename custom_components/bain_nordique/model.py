@@ -253,6 +253,7 @@ class Engine:
     WINDOW = timedelta(minutes=30)
     BUFFER = timedelta(hours=14)
     RISE, RISE_COLD, RISE_DECLARED = 1.0, 1.5, 0.6    # °C/h
+    RISE_WARM = 0.6                                   # °C/h, eau au-dessus du maintien
     END_AFTER = timedelta(minutes=60)
     OPEN = -1.0                                       # °C/h : chute = couverture ouverte
     PROBE_DROP = 3.0                                  # °C : sonde sortie de l'eau
@@ -374,25 +375,53 @@ class Engine:
     def _fire_starts(self, s: Sample, sl: float | None) -> bool:
         if sl is None:
             return False
+        low = min(x.tw for x in self._tail(timedelta(hours=2)))
+        hh = self.p.hold_high
+        # eau encore chaude (au-dessus du maintien, la résistance ne chauffe pas) :
+        # toute montée franche et durable est un feu, même lente (feu relancé)
+        if (hh is not None and not self.declared and s.tw > hh + 0.5
+                and sl > self.RISE_WARM and s.tw >= low + 0.3):
+            return True
         if self.declared:
             rise = self.RISE_DECLARED
         else:
-            rise = self.RISE if self.p.hold_high is not None else self.RISE_COLD
+            rise = self.RISE if hh is not None else self.RISE_COLD
         margin = 0.1 if self.declared else 0.3
-        above = self.p.hold_high is None or s.tw > self.p.hold_high + margin or sl > 3.0
-        low = min(x.tw for x in self._tail(timedelta(hours=2)))
+        above = hh is None or s.tw > hh + margin or sl > 3.0
         return sl > rise and above and s.tw >= low + 0.5
 
-    def _start_fire(self, s: Sample) -> dict:
-        # base : minimum local en remontant le temps (≤ 3 h)
-        pts = self._tail(timedelta(hours=3))
+    def _rise_base(self, pts: list[Sample]) -> tuple[float, datetime]:
+        """Creux d'où part la montée : (température, heure).
+
+        On remonte le temps par pas de 5 min sur des moyennes de 10 min, tant que l'eau
+        ne redescend pas : la sonde oscille entre deux paliers de 0,0625 °C, et un
+        simple relevé plus haut que le suivant arrêtait la recherche trop tôt."""
+        def smooth(t: datetime) -> float:
+            near = [x.tw for x in pts if abs(x.ts - t) <= timedelta(minutes=5)]
+            return sum(near) / len(near)
+
+        steps: list[tuple[datetime, float]] = []
         i = len(pts) - 1
-        while i > 0 and pts[i - 1].tw <= pts[i].tw + 0.01:
-            i -= 1
-        base = pts[i].tw
+        while i >= 0:
+            steps.append((pts[i].ts, smooth(pts[i].ts)))
+            limit = pts[i].ts - timedelta(minutes=5)
+            while i >= 0 and pts[i].ts > limit:
+                i -= 1
+        base_t, base = steps[0]
+        for (_, cur), (t, prev) in zip(steps, steps[1:]):
+            if prev > cur + 0.02:
+                break
+            if prev <= base:
+                base_t, base = t, prev
+        return base, base_t
+
+    def _start_fire(self, s: Sample) -> dict:
+        pts = self._tail(timedelta(hours=3))
+        base, base_t = self._rise_base(pts)
         # début de montée : passage à base + 0,25 °C (interpolé)
+        after = [x for x in pts if x.ts >= base_t]
         rise_start = s.ts
-        for a, b in zip(pts[i:], pts[i + 1:]):
+        for a, b in zip(after, after[1:]):
             if b.tw >= base + 0.25:
                 frac = (base + 0.25 - a.tw) / (b.tw - a.tw) if b.tw != a.tw else 1
                 rise_start = a.ts + (b.ts - a.ts) * max(0.0, min(1.0, frac))
@@ -405,8 +434,8 @@ class Engine:
         f.peak_ts = f.last_rise = s.ts
         self.fire = f
         self.hold_win, self.cool_win = [], []
-        self._mark_crossings(pts[i:])
-        return {"debut_montee": rise_start.isoformat(), "de": base,
+        self._mark_crossings(after)
+        return {"debut_montee": rise_start.isoformat(), "de": round(base, 2),
                 "declare": f.ignition is not None}
 
     def _mark_crossings(self, pts: list[Sample]) -> None:

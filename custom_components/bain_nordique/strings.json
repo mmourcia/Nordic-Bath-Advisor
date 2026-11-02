@@ -7,7 +7,13 @@
         "data": {
           "water_sensor": "Water temperature",
           "outdoor_sensor": "Outdoor temperature (sensor or weather)",
-          "wind_sensor": "Wind (weather or sensor, optional)"
+          "wind_sensor": "Wind (weather or sensor, optional)",
+          "power_sensor": "Electric heater plug (energy or power, optional)",
+          "kwh_price": "Price per kWh"
+        },
+        "data_description": {
+          "power_sensor": "Energy (kWh) or power (W) sensor of the plug feeding the electric heater. Used for the daily cost of keeping the bath warm.",
+          "kwh_price": "Used to turn the heater consumption into a cost."
         }
       }
     },
@@ -22,7 +28,13 @@
         "data": {
           "water_sensor": "Water temperature",
           "outdoor_sensor": "Outdoor temperature (sensor or weather)",
-          "wind_sensor": "Wind (weather or sensor, optional)"
+          "wind_sensor": "Wind (weather or sensor, optional)",
+          "power_sensor": "Electric heater plug (energy or power, optional)",
+          "kwh_price": "Price per kWh"
+        },
+        "data_description": {
+          "power_sensor": "Energy (kWh) or power (W) sensor of the plug feeding the electric heater. Used for the daily cost of keeping the bath warm.",
+          "kwh_price": "Used to turn the heater consumption into a cost."
         }
       }
     },
@@ -107,6 +119,15 @@
       },
       "vent": {
         "name": "Wind"
+      },
+      "energie_maintien_jour": {
+        "name": "Heater energy today"
+      },
+      "cout_maintien_jour": {
+        "name": "Heater cost today"
+      },
+      "cout_maintien_moyen": {
+        "name": "Heater cost per day"
       }
     },
     "binary_sensor": {

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.4.0 — 2026-11-02
+- **Feux manqués** : quand la sonde hésitait entre deux paliers de 0,0625 °C, le départ de la
+  montée était mal repéré. Le feu paraissait alors trop faible et était ignoré (feu relancé du 30/10 au
+  soir). Le creux de départ est maintenant cherché sur des moyennes de 10 min.
+- Sur une eau encore chaude (au-dessus du maintien), une montée lente mais durable
+  (> 0,6 °C/h pendant 30 min) suffit à détecter un feu : environ 35 min plus tôt sur un feu relancé.
+- **Coût du maintien électrique** : nouvelle option pour choisir le capteur d'énergie (kWh) ou de
+  puissance (W) de la prise de la résistance, et le prix du kWh. Trois nouveaux capteurs : énergie du
+  jour, coût du jour et coût moyen par jour sur les 7 derniers jours complets (avec l'historique
+  journalier et la température extérieure moyenne). La carte affiche le coût par jour.
+
 ## 1.3.1 — 2026-10-30
 - L'intégration apparaît désormais dans l'onglet **Intégrations** (et dans sa recherche) au lieu de
   l'onglet **Entrées** : elle est déclarée comme service et non plus comme entrée. Rien ne change pour

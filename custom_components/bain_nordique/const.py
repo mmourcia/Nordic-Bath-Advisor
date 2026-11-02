@@ -2,11 +2,14 @@
 from datetime import timedelta
 
 DOMAIN = "bain_nordique"
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 CARD_URL = f"/{DOMAIN}/bain-nordique-card.js"
 CONF_WATER = "water_sensor"
 CONF_OUTDOOR = "outdoor_sensor"      # capteur de température ou entité météo
 CONF_WIND = "wind_sensor"            # optionnel : capteur de vent ou entité météo
+CONF_POWER = "power_sensor"          # optionnel : prise du maintien électrique (W ou kWh)
+CONF_PRICE = "kwh_price"             # prix du kWh, pour le coût du maintien
+DEFAULT_PRICE = 0.20
 
 DEFAULT_TARGET = 38.0
 STAT_TARGETS = (38.0, 39.0)          # temps moyens publiés en capteurs
