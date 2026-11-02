@@ -31,8 +31,10 @@ Copier `custom_components/bain_nordique/` dans `/config/custom_components/`, red
 | Température de l'eau | n'importe quel capteur de température (ESPHome, Zigbee…) |
 | Température extérieure | un capteur de température **ou** une entité météo (`weather.*`) |
 | Vent (optionnel) | une entité météo ou un capteur de vitesse du vent |
+| Prise du maintien électrique (optionnel) | le capteur d'**énergie** (kWh) ou de **puissance** (W) de la prise qui alimente la résistance (Shelly…) |
+| Prix du kWh | 0,20 € par défaut, pour le coût du maintien |
 
-Les sources extérieures se changent ensuite dans *Configurer* sans réinstaller.
+Tout se change ensuite dans *Configurer* sans réinstaller, y compris la sonde d'eau : ce qui a été appris est conservé.
 Une entité météo complète (Met.no, Météo-France…) fournit les deux : température et vent.
 
 > **Mise à jour depuis la v0.8** : l'entrée existante est migrée (la sonde d'eau et la
@@ -54,6 +56,8 @@ en tire tout ce qu'elle peut. Ensuite elle apprend en continu ; le bouton
 
 ### Détection des feux
 Un feu est détecté quand l'eau monte nettement (> 1 °C/h, au-dessus du cycle du maintien).
+Quand l'eau est encore chaude (plus de 0,5 °C au-dessus du maintien, la résistance ne chauffe
+pas), une montée plus lente suffit (> 0,6 °C/h pendant 30 min) : un feu relancé est vu tôt.
 Le bouton **Feu allumé** est facultatif : il rend la détection plus sensible et permet
 d'apprendre le délai d'allumage. **Pas de feu** annule une fausse détection.
 Un feu se termine 1 h après la dernière montée ; une chute rapide après le pic est notée comme baignade.
@@ -91,6 +95,8 @@ Les identifiants dépendent de la langue de Home Assistant ; ceux ci-dessous son
 | `sensor.bain_nordique_vitesse_de_montee_moyenne`, `…_pic_du_dernier_feu` | stats de chauffe ; le dernier feu détaillé en attributs |
 | `sensor.bain_nordique_pertes_actuelles` | °C/h perdus maintenant |
 | `sensor.bain_nordique_temperature_exterieure`, `…_vent` | copies de la source extérieure (et du vent), avec courbe et statistiques même si la source est une entité météo |
+| `sensor.bain_nordique_cout_du_maintien_par_jour` | si une prise est configurée : coût moyen des 7 derniers jours complets (estimé sur la journée en cours au début) ; attributs : kWh/jour, historique par jour avec la température extérieure moyenne |
+| `sensor.bain_nordique_cout_du_maintien_aujourd_hui`, `…_energie_du_maintien_aujourd_hui` | consommation et coût du jour, remis à zéro à minuit |
 | `sensor.bain_nordique_coefficient_de_pertes`, `…_sensibilite_au_vent` | diagnostic (vent : % de pertes en plus par 10 km/h) |
 | `sensor.bain_nordique_consigne_du_maintien_electrique`, `…_delai_d_allumage`, `…_chaleur_du_feu_habituel` | diagnostic |
 | `binary_sensor.bain_nordique_feu_en_cours`, `…_bain_pret`, `…_sonde_hors_de_l_eau` | |
@@ -114,7 +120,8 @@ type: custom:bain-nordique-card
 Elle est aussi proposée dans le sélecteur de cartes (« Bain nordique »). Elle affiche :
 la température de l'eau et l'état, la cible réglable (− / +), la température extérieure et le vent (si une source de vent est configurée), la prévision (si feu maintenant
 ou feu en cours, avec fourchette et pic), une courbe des dernières heures prolongée par la
-prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques. Un clic sur une
+prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques (avec le coût du
+maintien par jour à la place du nombre total de feux quand une prise est configurée). Un clic sur une
 valeur ouvre l'historique de l'entité, y compris la température extérieure, le vent et les pertes.
 
 Options :

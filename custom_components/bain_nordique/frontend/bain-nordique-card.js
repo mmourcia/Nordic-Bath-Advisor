@@ -9,7 +9,7 @@
  *
  * Les entités sont trouvées seules via l'attribut `entites` du capteur d'état.
  */
-const VERSION = "1.3.1";
+const VERSION = "1.4.0";
 
 const STATE_LABEL = {
   hold: "Maintien électrique",
@@ -266,7 +266,9 @@ class BainNordiqueCard extends HTMLElement {
           ${stat("temps_moyen_39", "moyenne → 39 °C", duration)}
           ${stat("montee_moyenne", "montée moyenne", (v) => `${num(v, 1)} °C/h`)}
           ${stat("dernier_feu", "pic du dernier feu", (v) => `${num(v, 1)} °C`)}
-          ${stat("nombre_feux", "feux au total", (v) => v)}
+          ${(a.entites || {}).cout_maintien_moyen
+            ? stat("cout_maintien_moyen", "maintien / jour", (v) => `${num(v, 2)} €`)
+            : stat("nombre_feux", "feux au total", (v) => v)}
         </div>
       </ha-card>`;
   }

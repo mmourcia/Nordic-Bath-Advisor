@@ -125,3 +125,47 @@ def test_params_roundtrip():
     q = model.Params.from_dict(p.as_dict())
     assert q.as_dict() == p.as_dict()
     assert math.isclose(q.k(None), p.k(None))
+
+
+# Feu relancé le 30/10/2026 vers 18h35 alors que l'eau refroidissait encore d'un feu du
+# midi : moyennes sur 5 min relevées dans Home Assistant, de 18h00 à 22h25 (heure locale).
+RELIGHT_5MIN = [
+    37.06, 37.03, 37.0, 37.0, 36.98, 36.95, 36.94, 36.95, 37.02, 37.1, 37.15, 37.22, 37.27,
+    37.35, 37.38, 37.43, 37.52, 37.63, 37.73, 37.89, 38.01, 38.17, 38.27, 38.34, 38.42, 38.5,
+    38.56, 38.6, 38.62, 38.64, 38.64, 38.63, 38.62, 38.62, 38.62, 38.62, 38.59, 38.56, 38.55,
+    38.5, 38.5, 38.46, 38.44, 38.43, 38.38, 38.38, 38.43, 38.55, 38.65, 38.75, 38.86, 38.94,
+    39.03, 39.07]
+
+
+def _ds18b20(curve: list[tuple[float, float]], step_s: int = 30):
+    """Relevés toutes les 30 s, quantifiés à 0,0625 °C, avec l'hésitation de la sonde
+    entre deux paliers ; seuls les changements sont publiés, comme dans Home Assistant."""
+    out, last, n = [], None, 0
+    for (h0, v0), (h1, v1) in zip(curve, curve[1:]):
+        t = h0
+        while t < h1:
+            v = v0 + (v1 - v0) * (t - h0) / (h1 - h0)
+            n += 1
+            jitter = 0.035 * math.sin(n * 2.399)            # bruit pseudo-aléatoire
+            q = round((v + jitter) / 0.0625) * 0.0625
+            if q != last:
+                out.append((T0 + timedelta(hours=t), q))
+                last = q
+            t += step_s / 3600
+    return out
+
+
+def test_slow_relight_on_warm_water_detected():
+    p = model.Params()
+    p.hold_low, p.hold_high = 32.8, 33.3
+    curve = [(13.0, 37.8)]                                   # refroidissement depuis le midi
+    curve += [(18.0 + i * 5 / 60, v) for i, v in enumerate(RELIGHT_5MIN)]
+    curve += [(23.0, 38.0), (24.25, 36.1), (26.0, 35.5)]     # baignade puis refroidissement
+    eng, ev = run(_ds18b20(curve), model.Engine(p, []))
+    starts = [(ts, d) for ts, n, d in ev if n == "fire_start"]
+    first_ts, first = starts[0]
+    assert T0 + timedelta(hours=18, minutes=50) <= first_ts <= T0 + timedelta(hours=19, minutes=10)
+    assert abs(first["de"] - 36.94) < 0.1
+    rec = eng.fires[0]
+    assert abs(rec["pic"] - 38.64) < 0.1
+    assert rec["debut_montee"] < (T0 + timedelta(hours=18, minutes=55)).isoformat()

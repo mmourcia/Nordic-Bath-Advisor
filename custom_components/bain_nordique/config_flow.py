@@ -1,4 +1,4 @@
-"""Configuration via l'interface : sonde d'eau, température extérieure, vent."""
+"""Configuration via l'interface : sonde d'eau, température extérieure, vent, prise."""
 from __future__ import annotations
 
 from typing import Any
@@ -6,15 +6,25 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
-from homeassistant.helpers.selector import EntitySelector, EntitySelectorConfig
+from homeassistant.helpers.selector import (
+    EntitySelector,
+    EntitySelectorConfig,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
-from .const import CONF_OUTDOOR, CONF_WATER, CONF_WIND, DOMAIN
+from .const import CONF_OUTDOOR, CONF_POWER, CONF_PRICE, CONF_WATER, CONF_WIND, DEFAULT_PRICE, DOMAIN
 
 _WATER = EntitySelector(EntitySelectorConfig(domain="sensor", device_class="temperature"))
 _OUTDOOR = EntitySelector(EntitySelectorConfig(filter=[
     {"domain": "sensor", "device_class": "temperature"}, {"domain": "weather"}]))
 _WIND = EntitySelector(EntitySelectorConfig(filter=[
     {"domain": "sensor", "device_class": "wind_speed"}, {"domain": "weather"}]))
+_POWER = EntitySelector(EntitySelectorConfig(filter=[
+    {"domain": "sensor", "device_class": "energy"}, {"domain": "sensor", "device_class": "power"}]))
+_PRICE = NumberSelector(NumberSelectorConfig(min=0, max=5, step="any", mode=NumberSelectorMode.BOX,
+                                             unit_of_measurement="€/kWh"))
 
 
 def _schema(defaults: dict[str, Any], with_water: bool) -> vol.Schema:
@@ -24,6 +34,9 @@ def _schema(defaults: dict[str, Any], with_water: bool) -> vol.Schema:
     fields[vol.Required(CONF_OUTDOOR, default=defaults.get(CONF_OUTDOOR, vol.UNDEFINED))] = _OUTDOOR
     wind = defaults.get(CONF_WIND)
     fields[vol.Optional(CONF_WIND, description={"suggested_value": wind} if wind else None)] = _WIND
+    power = defaults.get(CONF_POWER)
+    fields[vol.Optional(CONF_POWER, description={"suggested_value": power} if power else None)] = _POWER
+    fields[vol.Optional(CONF_PRICE, default=defaults.get(CONF_PRICE, DEFAULT_PRICE))] = _PRICE
     return vol.Schema(fields)
 
 

@@ -7,7 +7,13 @@
         "data": {
           "water_sensor": "Température de l'eau",
           "outdoor_sensor": "Température extérieure (capteur ou météo)",
-          "wind_sensor": "Vent (météo ou capteur, optionnel)"
+          "wind_sensor": "Vent (météo ou capteur, optionnel)",
+          "power_sensor": "Prise du maintien électrique (énergie ou puissance, optionnel)",
+          "kwh_price": "Prix du kWh"
+        },
+        "data_description": {
+          "power_sensor": "Capteur d'énergie (kWh) ou de puissance (W) de la prise qui alimente la résistance. Sert au coût quotidien du maintien.",
+          "kwh_price": "Sert à convertir la consommation de la résistance en coût."
         }
       }
     },
@@ -22,7 +28,13 @@
         "data": {
           "water_sensor": "Température de l'eau",
           "outdoor_sensor": "Température extérieure (capteur ou météo)",
-          "wind_sensor": "Vent (météo ou capteur, optionnel)"
+          "wind_sensor": "Vent (météo ou capteur, optionnel)",
+          "power_sensor": "Prise du maintien électrique (énergie ou puissance, optionnel)",
+          "kwh_price": "Prix du kWh"
+        },
+        "data_description": {
+          "power_sensor": "Capteur d'énergie (kWh) ou de puissance (W) de la prise qui alimente la résistance. Sert au coût quotidien du maintien.",
+          "kwh_price": "Sert à convertir la consommation de la résistance en coût."
         }
       }
     },
@@ -107,6 +119,15 @@
       },
       "vent": {
         "name": "Vent"
+      },
+      "energie_maintien_jour": {
+        "name": "Énergie du maintien aujourd'hui"
+      },
+      "cout_maintien_jour": {
+        "name": "Coût du maintien aujourd'hui"
+      },
+      "cout_maintien_moyen": {
+        "name": "Coût du maintien par jour"
       }
     },
     "binary_sensor": {
