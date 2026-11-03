@@ -396,7 +396,28 @@ class BainCoordinator(DataUpdateCoordinator[dict]):
                 "exterieur": self.outdoor, "temperature_eau": self.data.get("tw") if self.data else None,
                 "temperature_exterieure": self.data.get("te") if self.data else None,
                 "vent_kmh": round(self.data["wind"], 1) if self.data and self.data.get("wind") is not None else None,
-                "maintien_bas": p.hold_low, "maintien_haut": p.hold_high}
+                "maintien_bas": p.hold_low, "maintien_haut": p.hold_high,
+                "puissance_prise": self._live_power()}
+
+    def _live_power(self) -> str | None:
+        """Capteur de puissance instantanée de la prise : celui configuré s'il est en W,
+        sinon le capteur de puissance du même appareil que le compteur d'énergie."""
+        from homeassistant.components.sensor import SensorDeviceClass
+        from homeassistant.helpers import entity_registry as er
+
+        if not self.power:
+            return None
+        reading = read_power(self.hass.states.get(self.power))
+        if reading is not None and reading[0] == "w":
+            return self.power
+        reg = er.async_get(self.hass)
+        entry = reg.async_get(self.power)
+        if entry is None or entry.device_id is None:
+            return None
+        for e in er.async_entries_for_device(reg, entry.device_id):
+            if e.domain == "sensor" and (e.device_class or e.original_device_class) == SensorDeviceClass.POWER:
+                return e.entity_id
+        return None
 
     # ------------------------------------------------------------ calcul
     def compute(self) -> dict:

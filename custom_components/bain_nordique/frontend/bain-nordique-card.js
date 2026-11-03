@@ -9,7 +9,7 @@
  *
  * Les entités sont trouvées seules via l'attribut `entites` du capteur d'état.
  */
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 
 const STATE_LABEL = {
   hold: "Maintien électrique",
@@ -99,7 +99,7 @@ class BainNordiqueCard extends HTMLElement {
   _renderKey(main) {
     if (!main) return "none";
     const ids = Object.values(main.attributes.entites || {});
-    ids.push(main.attributes.sonde_eau);
+    ids.push(main.attributes.sonde_eau, main.attributes.puissance_prise);
     return ids.map((id) => {
       const s = this._hass.states[id];
       return s ? s.last_updated : "";
@@ -228,6 +228,15 @@ class BainNordiqueCard extends HTMLElement {
     };
     const te = a.temperature_exterieure;
     const wind = a.vent_kmh;
+    const plug = a.puissance_prise ? this._hass.states[a.puissance_prise] : undefined;
+    const watts = plug && !["unknown", "unavailable"].includes(plug.state) ? parseFloat(plug.state) : null;
+    const plugW = watts === null || isNaN(watts) ? null
+      : (plug.attributes.unit_of_measurement || "W") === "kW" ? watts * 1000 : watts;
+    const power = a.puissance_prise
+      ? ` · <span class="link ${plugW !== null && plugW > 100 ? "heat" : ""}" data-action="more"
+          data-entity="${a.puissance_prise}" title="Puissance du maintien électrique"><ha-icon
+          icon="mdi:flash"></ha-icon>${plugW === null ? "—" : plugW > 100 ? `chauffe ${num(plugW, 0)} W` : `${num(plugW, 0)} W`}</span>`
+      : "";
 
     this.shadowRoot.innerHTML = `${this._style()}
       <ha-card>
@@ -254,7 +263,7 @@ class BainNordiqueCard extends HTMLElement {
               ? ` · <span class="link" data-action="more" data-key="vent" title="Historique du vent"><ha-icon
                 icon="mdi:weather-windy"></ha-icon>${num(wind, 0)} km/h</span>` : ""}</div>
             <div class="ext"><span class="link" data-action="more" data-key="pertes_actuelles"
-                title="Historique des pertes">pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</span></div>
+                title="Historique des pertes">pertes ${num(this._val("pertes_actuelles"), 2)} °C/h</span>${power}</div>
           </div>
         </div>
         ${prediction}
@@ -344,6 +353,7 @@ class BainNordiqueCard extends HTMLElement {
       .target-l, .ext { font-size: .8em; color: var(--secondary-text-color); }
       .ext ha-icon { --mdc-icon-size: 14px; vertical-align: -2px; margin-right: 1px; }
       .link { cursor: pointer; border-radius: 6px; padding: 1px 3px; margin: 0 -3px; }
+      .link.heat { color: var(--state-climate-heat-color, #ff7028); }
       .link:hover { background: var(--secondary-background-color); color: var(--primary-text-color); }
       .target-ctl { display: flex; align-items: center; justify-content: flex-end; gap: 6px; margin: 2px 0; }
       .target-v { font-size: 1.3em; min-width: 72px; text-align: center; color: var(--primary-text-color); }
