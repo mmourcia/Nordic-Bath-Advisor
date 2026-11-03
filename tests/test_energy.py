@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -100,3 +100,27 @@ async def test_cost_sensors_created(hass: HomeAssistant) -> None:
     assert state("cout_maintien_jour").attributes["unit_of_measurement"] == hass.config.currency
     assert state("cout_maintien_moyen") is not None
     assert "cout_maintien_moyen" in state("etat").attributes["entites"]
+
+
+async def test_card_finds_plug_power_next_to_energy(hass: HomeAssistant) -> None:
+    hass.states.async_set("sensor.eau", "33.4", {"unit_of_measurement": "°C",
+                                                 "device_class": "temperature"})
+    plug_entry = MockConfigEntry(domain="shelly")
+    plug_entry.add_to_hass(hass)
+    dev = dr.async_get(hass).async_get_or_create(config_entry_id=plug_entry.entry_id,
+                                                 identifiers={("shelly", "plug")})
+    reg = er.async_get(hass)
+    reg.async_get_or_create("sensor", "shelly", "e", suggested_object_id="prise_energie",
+                            device_id=dev.id, original_device_class="energy")
+    reg.async_get_or_create("sensor", "shelly", "p", suggested_object_id="prise_puissance",
+                            device_id=dev.id, original_device_class="power")
+    hass.states.async_set("sensor.prise_energie", "1.0", {"unit_of_measurement": "kWh",
+                                                          "device_class": "energy"})
+    hass.states.async_set("sensor.prise_puissance", "2980", {"unit_of_measurement": "W",
+                                                             "device_class": "power"})
+    entry = MockConfigEntry(domain=DOMAIN, version=2, unique_id="sensor.eau",
+                            data={CONF_WATER: "sensor.eau", CONF_POWER: "sensor.prise_energie"})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert entry.runtime_data.card_info()["puissance_prise"] == "sensor.prise_puissance"

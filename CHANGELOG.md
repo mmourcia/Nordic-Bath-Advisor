@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1 — 2026-11-03
+- La carte affiche la **puissance instantanée** de la prise du maintien, à côté des pertes : en orange
+  avec « chauffe » quand la résistance tourne. Si la prise est configurée avec son compteur d'énergie,
+  le capteur de puissance du même appareil est trouvé tout seul. Un clic ouvre son historique.
+
 ## 1.4.0 — 2026-11-02
 - **Feux manqués** : quand la sonde hésitait entre deux paliers de 0,0625 °C, le départ de la
   montée était mal repéré. Le feu paraissait alors trop faible et était ignoré (feu relancé du 30/10 au

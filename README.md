@@ -118,11 +118,12 @@ type: custom:bain-nordique-card
 ```
 
 Elle est aussi proposée dans le sélecteur de cartes (« Bain nordique »). Elle affiche :
-la température de l'eau et l'état, la cible réglable (− / +), la température extérieure et le vent (si une source de vent est configurée), la prévision (si feu maintenant
+la température de l'eau et l'état, la cible réglable (− / +), la température extérieure et le vent (si une source de vent est configurée), la puissance
+instantanée de la prise du maintien (en orange quand la résistance chauffe), la prévision (si feu maintenant
 ou feu en cours, avec fourchette et pic), une courbe des dernières heures prolongée par la
 prévision, les boutons *J'allume le feu* / *Pas de feu* et les statistiques (avec le coût du
 maintien par jour à la place du nombre total de feux quand une prise est configurée). Un clic sur une
-valeur ouvre l'historique de l'entité, y compris la température extérieure, le vent et les pertes.
+valeur ouvre l'historique de l'entité, y compris la température extérieure, le vent, les pertes et la puissance de la prise.
 
 Options :
 ```yaml
