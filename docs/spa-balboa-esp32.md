@@ -104,6 +104,19 @@ boîtier, refermez, puis remettez le courant. En V DC :
 > l'inverse de ce que suggère le brochage ci-dessus. Le premier branchement ne donnait rien (écran
 > normal, aucune trame). Permuter les deux fils, disjoncteur coupé, a suffi. Cette inversion n'a rien abîmé.
 
+### Le montage terminé
+
+Le cordon se branche sur J34, en haut à droite de la carte, et sort du boîtier Balboa par un passage de câble :
+
+![Cordon branché sur J34 et sortant du boîtier Balboa](balboa/cablage-j34.jpg)
+
+<p>
+  <img src="balboa/atom-a131.jpg" alt="ATOM Lite sur sa base A131, bornier B, A, DC 24V, G" width="30%">
+  <img src="balboa/sortie-cable.jpg" alt="Câble entrant par un presse-étoupe dans le boîtier de l'ESP32" width="50%">
+</p>
+
+De gauche à droite sur le bornier de la A131 : les deux fils noirs du bus (B, A), le jaune (+14,75 V), le rouge (masse).
+
 ## ESPHome
 
 Configuration complète : [`esphome/spa-balboa.yaml`](../esphome/spa-balboa.yaml), basée sur le composant
