@@ -184,6 +184,12 @@ series:
 [`esphome/sonde-bain-nordique.yaml`](esphome/sonde-bain-nordique.yaml) : DS18B20 lue toutes les 30 s,
 sans deep sleep. Home Assistant n'enregistre que les changements, l'historique reste léger.
 
+## Spa Balboa piloté par ESP32 (optionnel)
+Si le bain a une électronique Balboa, un ESP32 sur le bus de commande remonte la température et permet de
+piloter la consigne, les modes Ready/Rest, la lumière et les bulles :
+[guide matériel et logiciel](docs/spa-balboa-esp32.md), configuration dans
+[`esphome/spa-balboa.yaml`](esphome/spa-balboa.yaml).
+
 ## Développement
 Publier une version : changer `version` dans `custom_components/bain_nordique/manifest.json`
 (et `VERSION` dans `const.py`), ajouter sa section au `CHANGELOG.md`, puis fusionner dans `main`.
