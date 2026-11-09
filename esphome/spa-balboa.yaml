@@ -1,0 +1,117 @@
+# Passerelle ESP32 pour un spa Balboa (bus RS-485) — guide complet : docs/spa-balboa-esp32.md
+# Carte : M5Stack ATOM Lite (C008) sur ATOMIC RS485 Base (A131)
+# Testé sur Balboa BP6013G1 (carte 24202_B), Setup 4, branché sur J34.
+#
+# Composant : https://github.com/brianfeucht/esphome-balboa-spa
+# Ce fichier n'est qu'un exemple, à adapter à votre carte.
+
+esphome:
+  name: spa-balboa
+  friendly_name: Spa Balboa
+
+esp32:
+  variant: esp32
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+  baud_rate: 0                  # pas de log USB : il ralentirait la lecture du bus (logs disponibles en Wi-Fi)
+  logs:
+    BalboaSpa.component: ERROR  # masque "No new message", répété à chaque cycle tant que le bus est muet
+                                # à repasser en DEBUG pour diagnostiquer le bus
+
+api:
+  encryption:
+    key: !secret spa_balboa_api_key
+
+ota:
+  - platform: esphome
+    password: !secret spa_balboa_ota_password
+
+wifi:
+  # use_address: 192.168.x.x    # si le Builder voit l'appareil hors ligne (résolution .local)
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: Spa Balboa Fallback Hotspot
+    password: !secret spa_balboa_ap_password
+
+captive_portal:
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/brianfeucht/esphome-balboa-spa
+      ref: main
+
+# ATOMIC RS485 Base (A131) : TX GPIO19, RX GPIO22, direction automatique
+uart:
+  id: spa_uart_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  baud_rate: 115200
+  rx_buffer_size: 512
+
+balboa_spa:
+  id: spa
+  spa_temp_scale: C
+
+# Mode HEAT = Ready, mode OFF = Rest (le spa n'est pas éteint).
+# Préréglage HOME = plage haute, ECO = plage basse.
+climate:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    name: "Thermostat"
+    visual:
+      min_temperature: 10 °C
+      max_temperature: 40 °C
+      temperature_step: 0.5 °C
+
+light:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    light:
+      name: "Lumière"
+
+switch:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    blower:
+      name: "Bulles"
+      discard_updates: 100      # la carte met ~0,7 s à réagir : évite de renvoyer la bascule trop tôt
+      max_toggle_attempts: 3
+
+binary_sensor:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    connected:
+      name: "Bus connecté"
+    circulation:
+      name: "Pompe de circulation"
+    heatstate:
+      name: "Chauffe en cours"
+    restmode:
+      name: "Mode Rest"
+    highrange:
+      name: "Plage haute"
+    blower:
+      name: "Bulles actives"
+
+text_sensor:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    fault_message:
+      name: "Dernier défaut"
+    component_version:
+      name: "Version du composant"
+
+button:
+  - platform: balboa_spa
+    balboa_spa_id: spa
+    request_fault_log:
+      name: "Lire le journal de défauts"
