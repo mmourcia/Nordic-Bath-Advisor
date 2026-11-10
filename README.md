@@ -11,6 +11,10 @@ avec ou sans maintien électrique. Elle répond à :
 
 Tout est appris à partir des courbes, sans réglage : il suffit de choisir les entités.
 
+> **Électronique Balboa ?** Un ESP32 sur le bus du spa remonte la température et pilote consigne,
+> Ready/Rest, lumière et bulles depuis Home Assistant :
+> [guide Spa Balboa piloté par ESP32](docs/spa-balboa-esp32.md).
+
 ![Carte Bain nordique pendant un feu, thèmes clair et sombre](https://raw.githubusercontent.com/mmourcia/Nordic-Bath-Advisor/main/docs/carte.png)
 
 *La carte livrée avec l'intégration, pendant un feu : température, cible, heure d'arrivée à 38 °C avec sa fourchette, pic prévu, courbe mesurée et prévue, statistiques.*
